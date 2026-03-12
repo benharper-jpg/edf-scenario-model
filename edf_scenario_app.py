@@ -303,11 +303,10 @@ result["_impact_bin"] = pd.cut(
 dist = result["_impact_bin"].value_counts().reindex(bin_labels, fill_value=0)
 dist_pct = (dist / len(result) * 100).round(1)
 
-dist_cols = st.columns(len(bin_labels))
-for col, label in zip(dist_cols, bin_labels):
-    zone_count = int(dist[label])
-    zone_pct = dist_pct[label]
-    col.metric(label, f"{zone_count}", delta=f"{zone_pct:.0f}%", delta_color="off")
+dist_df = pd.DataFrame({
+    label: [int(dist[label]), f"{dist_pct[label]:.1f}%"] for label in bin_labels
+}, index=["Zones", "% of Zones"])
+st.dataframe(dist_df, use_container_width=True, height=105)
 
 # ── Zone detail table ─────────────────────────────────────────────────────────
 
