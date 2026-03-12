@@ -303,23 +303,11 @@ result["_impact_bin"] = pd.cut(
 dist = result["_impact_bin"].value_counts().reindex(bin_labels, fill_value=0)
 dist_pct = (dist / len(result) * 100).round(1)
 
-dist_df = pd.DataFrame({"Bucket": bin_labels, "Zones": dist.values, "% of Zones": dist_pct.values})
-c_chart, c_table = st.columns([3, 1])
-with c_chart:
-    st.bar_chart(dist_df.set_index("Bucket")["% of Zones"], height=280,
-                 use_container_width=True, color="#198e99")
-with c_table:
-    st.dataframe(
-        dist_df,
-        use_container_width=True,
-        hide_index=True,
-        height=280,
-        column_config={
-            "Bucket": st.column_config.TextColumn("% Orders EDF"),
-            "Zones": st.column_config.NumberColumn("Zones", format="%d"),
-            "% of Zones": st.column_config.NumberColumn("% of Zones", format="%.1f%%"),
-        },
-    )
+dist_cols = st.columns(len(bin_labels))
+for col, label in zip(dist_cols, bin_labels):
+    zone_count = int(dist[label])
+    zone_pct = dist_pct[label]
+    col.metric(label, f"{zone_count}", delta=f"{zone_pct:.0f}%", delta_color="off")
 
 # ── Zone detail table ─────────────────────────────────────────────────────────
 
