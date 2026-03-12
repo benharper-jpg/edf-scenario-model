@@ -290,6 +290,37 @@ c3.metric("EDF Partners", _short(con_partners_total))
 c4.metric("Selection-Bound", f"{sel_bound:,}")
 c5.metric("Order-Bound", f"{ord_bound:,}")
 
+# ── Zone distribution by order impact ────────────────────────────────────────
+
+st.markdown("### Zone Distribution (% orders paying EDF)")
+
+bins = list(range(0, 101, 10))
+bin_labels = [f"{lo}-{hi}%" for lo, hi in zip(bins[:-1], bins[1:])]
+result["_impact_bin"] = pd.cut(
+    result["% Orders EDF"], bins=bins, labels=bin_labels,
+    include_lowest=True, right=True,
+)
+dist = result["_impact_bin"].value_counts().reindex(bin_labels, fill_value=0)
+dist_pct = (dist / len(result) * 100).round(1)
+
+dist_df = pd.DataFrame({"Bucket": bin_labels, "Zones": dist.values, "% of Zones": dist_pct.values})
+c_chart, c_table = st.columns([3, 1])
+with c_chart:
+    st.bar_chart(dist_df.set_index("Bucket")["% of Zones"], height=280,
+                 use_container_width=True, color="#198e99")
+with c_table:
+    st.dataframe(
+        dist_df,
+        use_container_width=True,
+        hide_index=True,
+        height=280,
+        column_config={
+            "Bucket": st.column_config.TextColumn("% Orders EDF"),
+            "Zones": st.column_config.NumberColumn("Zones", format="%d"),
+            "% of Zones": st.column_config.NumberColumn("% of Zones", format="%.1f%%"),
+        },
+    )
+
 # ── Zone detail table ─────────────────────────────────────────────────────────
 
 st.markdown("### Zone Detail")
